@@ -1,9 +1,10 @@
 ![StockSync Enterprise Cover](cover.png)
 
-🇺🇸 [Read in English](#english-version) | 🇪🇸 [Leer en Español](#versión-en-español)
+🇺🇸 [Read in English](#english-version) | 🇪🇸 [Leer en Español](#spanish-version)
 
 ---
 
+<a name="spanish-version"></a>
 # 🇪🇸 Versión en Español
 
 **StockSync Enterprise** es un sistema de planificación de recursos (ERP) y gestión de inventarios diseñado para operaciones logísticas, control de bodegas y auditoría física de stock. 
@@ -24,6 +25,7 @@
 
 ---
 
+<a name="english-version"></a>
 # 🇺🇸 English Version
 
 **StockSync Enterprise** is an Enterprise Resource Planning (ERP) and inventory management system designed for logistics operations, warehouse control, and physical stock auditing.
