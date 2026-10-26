@@ -1,126 +1,121 @@
 <x-app-layout>
-    <div class="flex flex-col gap-space-lg pb-space-xl pt-6">
-        
-        <!-- CABECERA: Título y Estadísticas -->
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mb-4">
-            <div class="flex flex-col gap-space-xs">
-                <div class="flex items-center gap-space-sm">
-                    <span class="px-2 py-0.5 rounded-lg bg-primary/10 text-primary font-label-sm text-label-sm uppercase tracking-wider font-semibold">Módulo Logístico</span>
-                </div>
-                <h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">Inventario Central</h1>
-                <p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">Gestión de existencias y sincronización con hojas de cálculo.</p>
-            </div>
-            
-            <div class="flex items-center gap-space-md bg-surface-container-low px-space-md py-space-sm rounded-xl">
-                <div class="flex flex-col">
-                    <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Total SKUs</span>
-                    <span class="font-headline-sm text-headline-sm text-on-surface">{{ collect($products ?? [])->count() }}</span>
-                </div>
-            </div>
+    <x-slot:title>Inventario</x-slot>
+
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-5">
+        <div>
+            <h1 class="page-title">Inventario</h1>
+            <p class="page-lead">{{ $products->count() }} productos. El stock cambia solo con movimientos, para que todo quede registrado.</p>
         </div>
+        <a href="{{ route('products.create') }}" class="btn-primary">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+            Nuevo producto
+        </a>
+    </div>
 
-        <!-- Alertas de éxito/error -->
-        @if(session('success'))
-            <div class="bg-primary-container border-l-4 border-primary text-on-primary-container p-4 mb-4 rounded-r-lg" role="alert">
-                <p class="font-bold">¡Éxito!</p>
-                <p>{{ session('success') }}</p>
-            </div>
+    <div class="mt-6 space-y-3">
+        @if (session('success'))
+            <div class="notice-ok" role="status"><span class="material-symbols-outlined">check_circle</span>{{ session('success') }}</div>
         @endif
-
-        @if($errors->any())
-            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-r-lg" role="alert">
-                <p class="font-bold">Atención</p>
-                <p>{{ $errors->first() }}</p>
-            </div>
+        @if ($errors->any())
+            <div class="notice-error" role="alert"><span class="material-symbols-outlined">error</span>{{ $errors->first() }}</div>
         @endif
+    </div>
 
-        <!-- BLOQUE DE BOTONES (AQUÍ DEBEN APARECER) -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-            <div class="flex flex-wrap items-center gap-3">
-                
-                <!-- 1. Formulario para Importar: la categoría se asigna a los productos nuevos -->
-                <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data" id="importForm" class="flex items-center gap-2">
-                    @csrf
-                    <label for="importCategory" class="text-sm font-semibold text-gray-600">Categoría para nuevos:</label>
-                    <select name="category_id" id="importCategory" required class="rounded-lg border-gray-300 text-sm">
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
-                        @endforeach
-                    </select>
-                    <input type="file" name="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="document.getElementById('importForm').submit()">
-                </form>
-
-                <!-- 2. Botón Importar (Verde/Primario) -->
-                <button type="button" onclick="document.getElementById('fileInput').click()" class="bg-primary hover:bg-primary-container text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-md transition-all">
-                    <span class="material-symbols-outlined text-[20px]">upload_file</span>
+    <!-- Excel: importar y exportar -->
+    <section class="panel mt-6 p-4 sm:p-5">
+        <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data" id="importForm"
+              class="flex flex-col lg:flex-row lg:items-end gap-4">
+            @csrf
+            <div class="lg:max-w-xs w-full">
+                <label for="importCategory" class="field-label">Categoría para productos nuevos</label>
+                <select name="category_id" id="importCategory" required class="field">
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <input type="file" name="file" id="fileInput" accept=".xlsx,.xls,.csv" class="hidden" onchange="this.form.submit()">
+            <div class="flex flex-wrap gap-3 shrink-0">
+                <button type="button" onclick="document.getElementById('fileInput').click()" class="btn-secondary">
+                    <span class="material-symbols-outlined text-[20px]">upload</span>
                     Importar Excel
                 </button>
-
-                <!-- 3. Botón Exportar (Azul/Secundario) -->
-                <a href="{{ route('products.export') }}" class="bg-surface-container-low hover:bg-surface-container text-on-surface px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 border border-gray-200 transition-all">
-                    <span class="material-symbols-outlined text-[20px] text-secondary">download</span>
-                    Exportar Datos
+                <a href="{{ route('products.export') }}" class="btn-secondary">
+                    <span class="material-symbols-outlined text-[20px]">download</span>
+                    Exportar Excel
                 </a>
-                
-                <!-- 4. Botón Nuevo Manual -->
-                <a href="{{ route('products.create') }}" class="bg-transparent hover:bg-gray-50 text-gray-700 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 border border-gray-300 transition-all">
-                    <span class="material-symbols-outlined text-[20px]">add</span>
-                    Añadir Manual
-                </a>
-
             </div>
+            <p class="text-sm text-gris lg:ml-auto lg:max-w-xs">Si el SKU ya existe se actualizan sus datos; si es nuevo, se crea en la categoría elegida.</p>
+        </form>
+    </section>
+
+    <!-- Tabla con búsqueda dentro de la página -->
+    <section class="mt-8" x-data="{ q: '' }">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h2 class="section-title">Productos</h2>
+            <label class="relative sm:w-72">
+                <span class="sr-only">Buscar por nombre, SKU o categoría</span>
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-petroleo-300 text-[20px]">search</span>
+                <input type="search" x-model="q" placeholder="Buscar por nombre o SKU" class="field mt-0 pl-10">
+            </label>
         </div>
 
-        <!-- TABLA DE DATOS -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="py-4 px-6 text-sm font-semibold text-gray-600">SKU</th>
-                            <th class="py-4 px-6 text-sm font-semibold text-gray-600">Nombre del Producto</th>
-                            <th class="py-4 px-6 text-sm font-semibold text-gray-600">Categoría</th>
-                            <th class="py-4 px-6 text-sm font-semibold text-gray-600 text-right">Stock</th>
-                            <th class="py-4 px-6 text-sm font-semibold text-gray-600 text-right">Precio</th>
-                            <th class="py-4 px-6 text-sm font-semibold text-gray-600 text-center">Estado</th>
-                            <th class="py-4 px-6 text-sm font-semibold text-gray-600 text-right">Acciones</th>
+        <div class="panel mt-3 overflow-x-auto">
+            <table class="w-full sm:min-w-[640px]">
+                <thead>
+                    <tr>
+                        <th class="table-head hidden sm:table-cell">SKU</th>
+                        <th class="table-head">Producto</th>
+                        <th class="table-head text-right">Stock</th>
+                        <th class="table-head text-right hidden sm:table-cell">Precio</th>
+                        <th class="table-head text-right"><span class="sr-only">Acciones</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($products as $product)
+                        @php $low = $product->stock <= $product->min_stock_alert; @endphp
+                        <tr x-show="q === '' || $el.dataset.search.includes(q.toLowerCase())"
+                            data-search="{{ mb_strtolower($product->sku . ' ' . $product->name . ' ' . ($product->category->name ?? '')) }}"
+                            class="hover:bg-concreto/50">
+                            <td class="table-cell hidden sm:table-cell"><span class="rack">{{ $product->sku }}</span></td>
+                            <td class="table-cell">
+                                <span class="rack mb-1 sm:hidden">{{ $product->sku }}</span>
+                                <p class="font-semibold">{{ $product->name }}</p>
+                                <p class="text-sm text-gris">{{ $product->category->name ?? 'Sin categoría' }}<span class="sm:hidden"> · ${{ number_format($product->price, 0, ',', '.') }}</span></p>
+                            </td>
+                            <td class="table-cell text-right whitespace-nowrap">
+                                <span class="font-display font-bold text-xl {{ $low ? 'text-senal-700' : '' }}">{{ $product->stock }}</span>
+                                <span class="block text-xs {{ $low ? 'text-senal-700 font-semibold' : 'text-gris' }}">
+                                    {{ $low ? 'Reponer · ' : '' }}mín. {{ $product->min_stock_alert }}
+                                </span>
+                            </td>
+                            <td class="table-cell text-right whitespace-nowrap hidden sm:table-cell">${{ number_format($product->price, 0, ',', '.') }}</td>
+                            <td class="table-cell text-right whitespace-nowrap px-2 sm:px-4">
+                                <a href="{{ route('products.edit', $product) }}" class="inline-flex items-center justify-center w-9 h-9 rounded-md text-petroleo hover:bg-petroleo-50" title="Editar {{ $product->name }}">
+                                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                                    <span class="sr-only">Editar {{ $product->name }}</span>
+                                </a>
+                                <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline"
+                                      onsubmit="return confirm('¿Eliminar {{ $product->name }}? Solo se puede si no tiene movimientos.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center justify-center w-9 h-9 rounded-md text-salida hover:bg-salida-50" title="Eliminar {{ $product->name }}">
+                                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                                        <span class="sr-only">Eliminar {{ $product->name }}</span>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @forelse($products as $product)
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="py-4 px-6 font-mono text-sm text-gray-500 whitespace-nowrap">{{ $product->sku }}</td>
-                                <td class="py-4 px-6 font-medium text-gray-900">{{ $product->name }}</td>
-                                <td class="py-4 px-6 text-sm text-gray-600">{{ $product->category->name ?? '—' }}</td>
-                                <td class="py-4 px-6 text-right font-bold {{ $product->stock <= $product->min_stock_alert ? 'text-red-600' : 'text-gray-900' }}">
-                                    {{ $product->stock }}
-                                </td>
-                                <td class="py-4 px-6 text-right font-medium text-gray-900">${{ number_format($product->price, 2) }}</td>
-                                <td class="py-4 px-6 text-center">
-                                    @if($product->stock <= $product->min_stock_alert)
-                                        <span class="bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full">Crítico</span>
-                                    @else
-                                        <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">OK</span>
-                                    @endif
-                                </td>
-                                <td class="py-4 px-6 text-right whitespace-nowrap">
-                                    <a href="{{ route('products.edit', $product) }}" class="text-sm font-semibold text-primary hover:underline">Editar</a>
-                                    <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('¿Eliminar el producto {{ $product->name }}?');" class="inline-block ml-3">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-sm font-semibold text-red-600 hover:underline">Eliminar</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="py-12 text-center text-gray-500">No hay productos. Usa el botón "Importar Excel" arriba.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="p-10 text-center">
+                                <p class="font-semibold">Todavía no hay productos.</p>
+                                <p class="mt-1 text-gris">Crea uno con “Nuevo producto” o importa tu Excel.</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-
-    </div>
+    </section>
 </x-app-layout>
