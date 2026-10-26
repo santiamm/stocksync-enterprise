@@ -3,17 +3,28 @@
         <nav class="flex text-sm font-medium text-slate-500 mb-2">
             <a href="{{ route('products.index') }}" class="hover:text-indigo-600 transition">Inventario</a>
             <span class="mx-2">/</span>
-            <span class="text-slate-900">Nuevo Producto</span>
+            <span class="text-slate-900">{{ isset($product) ? 'Editar Producto' : 'Nuevo Producto' }}</span>
         </nav>
         <h2 class="font-extrabold text-3xl text-slate-900 tracking-tight">
-            Añadir Producto
+            {{ isset($product) ? 'Editar Producto' : 'Añadir Producto' }}
         </h2>
     </x-slot>
 
     <div class="py-10 bg-slate-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <form action="{{ route('products.store') }}" method="POST">
+            @if($errors->any())
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm" role="alert">
+                    <p class="font-bold">Atención</p>
+                    <p>{{ $errors->first() }}</p>
+                </div>
+            @endif
+
+            <!-- El mismo formulario sirve para crear y para editar -->
+            <form action="{{ isset($product) ? route('products.update', $product) : route('products.store') }}" method="POST">
                 @csrf
+                @isset($product)
+                    @method('PUT')
+                @endisset
 
                 <!-- SECCIÓN 1: DETALLES PRINCIPALES -->
                 <div class="md:grid md:grid-cols-3 md:gap-6 mb-10">
@@ -29,7 +40,7 @@
                                 
                                 <div class="col-span-6 sm:col-span-4">
                                     <label class="block text-sm font-semibold text-slate-900">Nombre del Producto</label>
-                                    <input type="text" name="name" required placeholder="Ej. Teclado Mecánico RGB" class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors">
+                                    <input type="text" name="name" value="{{ old('name', $product->name ?? '') }}" required placeholder="Ej. Teclado Mecánico RGB" class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors">
                                 </div>
 
                                 <div class="col-span-6 sm:col-span-2">
@@ -40,16 +51,16 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
                                             </svg>
                                         </div>
-                                        <input type="text" name="sku" required placeholder="PRD-001" class="block w-full pl-10 rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-mono text-slate-700">
+                                        <input type="text" name="sku" value="{{ old('sku', $product->sku ?? '') }}" required placeholder="PRD-001" class="block w-full pl-10 rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-mono text-slate-700">
                                     </div>
                                 </div>
 
                                 <div class="col-span-6 sm:col-span-3">
                                     <label class="block text-sm font-semibold text-slate-900">Categoría</label>
                                     <select name="category_id" required class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-slate-50">
-                                        <option value="" disabled selected>Selecciona una categoría...</option>
+                                        <option value="" disabled @selected(! old('category_id', $product->category_id ?? null))>Selecciona una categoría...</option>
                                         @foreach($categories as $category)
-                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                            <option value="{{ $category->id }}" @selected(old('category_id', $product->category_id ?? null) == $category->id)>{{ $category->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -60,7 +71,7 @@
                                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                             <span class="text-slate-500 sm:text-sm">$</span>
                                         </div>
-                                        <input type="number" step="0.01" name="price" required placeholder="0.00" class="block w-full pl-8 rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        <input type="number" step="0.01" name="price" value="{{ old('price', $product->price ?? '') }}" required placeholder="0.00" class="block w-full pl-8 rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     </div>
                                 </div>
                                 
@@ -81,13 +92,19 @@
                         <div class="shadow-sm ring-1 ring-slate-200 sm:rounded-2xl bg-white p-6 sm:p-8 grid grid-cols-2 gap-6">
                             
                             <div>
-                                <label class="block text-sm font-semibold text-slate-900">Stock Inicial</label>
-                                <input type="number" name="stock" value="0" required class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <label class="block text-sm font-semibold text-slate-900">{{ isset($product) ? 'Stock Actual' : 'Stock Inicial' }}</label>
+                                @isset($product)
+                                    <!-- El stock se cambia con movimientos para que quede en el historial -->
+                                    <input type="number" value="{{ $product->stock }}" disabled class="mt-2 block w-full rounded-xl border-slate-200 bg-slate-100 text-slate-500 shadow-sm sm:text-sm">
+                                    <p class="mt-2 text-xs text-slate-500">Para cambiarlo registra una entrada, salida o ajuste.</p>
+                                @else
+                                    <input type="number" name="stock" value="{{ old('stock', 0) }}" min="0" required class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                @endisset
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold text-slate-900 text-red-600">Alerta de Stock Crítico</label>
-                                <input type="number" name="min_stock_alert" value="10" required class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                <input type="number" name="min_stock_alert" value="{{ old('min_stock_alert', $product->min_stock_alert ?? 10) }}" required class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
                                 <p class="mt-2 text-xs text-slate-500">Notificar al administrador cuando el stock llegue a esta cantidad.</p>
                             </div>
 

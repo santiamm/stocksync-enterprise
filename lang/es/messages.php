@@ -15,7 +15,7 @@ return [
     'support' => 'Soporte Técnico',
     'terms' => 'Términos de Uso',
     'privacy' => 'Privacidad',
-    'real_time_monitor' => 'Monitor en Tiempo Real',
+    'real_time_monitor' => 'Resumen del Inventario',
     'op_summary' => 'Resumen Operativo',
     'op_desc' => 'Valoración de existencias y alertas de reposición.',
     'quick_load' => 'Carga Rápida de Stock',

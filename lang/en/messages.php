@@ -15,7 +15,7 @@ return [
     'support' => 'Technical Support',
     'terms' => 'Terms of Use',
     'privacy' => 'Privacy Policy',
-    'real_time_monitor' => 'Real-Time Monitor',
+    'real_time_monitor' => 'Inventory Overview',
     'op_summary' => 'Operational Summary',
     'op_desc' => 'Stock valuation and replenishment alerts.',
     'quick_load' => 'Quick Stock Load',

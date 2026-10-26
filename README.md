@@ -1,115 +1,80 @@
-![StockSync Enterprise Cover](cover.png)
+![StockSync](cover.png)
 
-🇺🇸 [Read in English](#english-version) | 🇪🇸 [Leer en Español](#spanish-version)
+# StockSync – Control de inventario para bodega
 
----
+**Proyecto académico** (Tecnología en Desarrollo de Sistemas Informáticos, UTS). Es una aplicación web para llevar el inventario de una bodega pequeña: qué productos hay, cuánto stock queda y quién registró cada entrada o salida.
 
-<a name="spanish-version"></a>
-# 🇪🇸 Versión en Español
+El código se escribió con ayuda de herramientas de IA. Yo definí las reglas del negocio (cómo se mueve el stock, qué se puede borrar y qué no, qué columnas lleva el Excel) y probé que funcionara.
 
-**StockSync Enterprise** es un sistema de planificación de recursos (ERP) y gestión de inventarios diseñado para operaciones logísticas, control de bodegas y auditoría física de stock. 
+> 🇺🇸 *Academic project: a small warehouse inventory web app built with Laravel. Products by category, stock in/out/adjustments with user and date, low-stock alerts and Excel import/export. Built with AI assistance; I defined the business rules and tested it.*
 
-A diferencia de plantillas genéricas, StockSync está diseñado con lógica operativa real, facilitando flujos de trabajo como conteos físicos, detección de mermas y sincronización masiva mediante hojas de Excel.
+## Capturas
 
-## 🚀 Características Principales
-*   **Motor de Sincronización Excel:** Importación/exportación bidireccional (`.xlsx`, `.xls`, `.csv`) con validación automática y prevención de duplicidad (Upsert).
-*   **Auditoría Física:** Trazabilidad de entradas, salidas y mermas con registro de usuario y fecha.
-*   **Monitor en Tiempo Real:** Panel ejecutivo con KPIs en vivo (capital invertido, alertas de quiebre).
-*   **Diseño Premium:** Interfaz corporativa responsive construida con Tailwind CSS, optimizada para ordenadores y terminales móviles de bodega.
-*   **Soporte Multilingüe:** Sistema preparado para traducciones nativas (i18n).
+| Panel principal | Inventario |
+|---|---|
+| ![Panel](docs/capturas/dashboard.png) | ![Inventario](docs/capturas/inventario.png) |
+| **Historial de movimientos** | **Registrar movimiento** |
+| ![Movimientos](docs/capturas/movimientos.png) | ![Nuevo movimiento](docs/capturas/nuevo-movimiento.png) |
 
-## 📖 Manual de Uso Rápido
+## Qué hace
 
-Una vez instalado, sigue este flujo operativo para poner en marcha tu almacén:
+- **Productos y categorías:** crear, editar y eliminar productos (SKU, nombre, precio, stock y stock mínimo). Las categorías se crean y se eliminan.
+- **Movimientos de stock:**
+  - *Entrada:* suma al stock (ej. llegada de proveedor).
+  - *Salida:* resta al stock. No deja sacar más de lo que hay.
+  - *Ajuste:* después de un conteo físico se escribe la cantidad contada y el stock queda en ese número.
+  - Cada movimiento guarda el usuario y la fecha.
+- **Alertas de stock bajo:** el panel muestra los productos que están en su stock mínimo o por debajo.
+- **Panel principal:** total de productos, unidades, valor del inventario (stock × precio) y últimos movimientos.
+- **Excel:**
+  - *Exportar* descarga el inventario en `.xlsx`.
+  - *Importar* (`.xlsx`, `.xls`, `.csv`) crea los SKU nuevos en la categoría elegida y actualiza los que ya existen sin cambiarles la categoría.
+- **Usuarios:** registro e inicio de sesión (Laravel Breeze).
 
-### 1. Configuración de Categorías (Taxonomía)
-Antes de ingresar productos, debes definir la estructura de tu bodega:
-*   Ve al menú **Categorías**.
-*   Haz clic en "Nueva Categoría".
-*   Asigna nombres descriptivos (Ej. "Herramientas Eléctricas", "Consumibles").
-*   *Nota de seguridad:* El sistema protege la integridad de los datos. No podrás eliminar una categoría si tiene productos vinculados.
+### Reglas que protegen los datos
+- No se puede borrar una categoría que tiene productos.
+- No se puede borrar un producto que ya tiene movimientos (se perdería su historial).
+- El stock de un producto no se edita a mano: se cambia con un movimiento, para que quede registrado.
 
-### 2. Carga de Inventario Base (Sincronización Excel)
-Para evitar la carga manual tediosa, usa el motor de Excel:
-*   Ve al menú **Inventario**.
-*   Haz clic en "Exportar Datos" para obtener la plantilla base oficial.
-*   Llena el Excel con tus SKUs, Nombres, Precios, Stock Actual y Stock Mínimo.
-*   Haz clic en "Importar Excel" y sube el archivo. El motor creará los productos nuevos y actualizará automáticamente las cantidades de los SKUs que ya existan (Upsert).
+## Lo que todavía no tiene (pendientes)
 
-### 3. Operación Diaria (Auditoría Física)
-Para registrar el movimiento diario de bodega (entradas de proveedor, despachos o pérdidas):
-*   Ve al menú **Auditoría Física**.
-*   Registra un nuevo movimiento seleccionando el producto, el tipo (Entrada, Salida, Ajuste/Merma) y la cantidad.
-*   Este movimiento actualizará automáticamente el inventario general y quedará grabado con fecha y nombre del operario responsable para trazabilidad.
+- El ajuste guarda la cantidad contada, no la diferencia, así que no hay un reporte de mermas.
+- La barra de búsqueda de arriba es solo visual.
+- Solo el panel principal está traducido al inglés; el resto está en español.
+- No hay roles (todos los usuarios pueden hacer todo) ni lector de código de barras.
+- No está publicado en internet; se prueba en local.
 
-### 4. Supervisión (Dashboard)
-Los gerentes o jefes de bodega pueden usar el **Panel de Control** para ver métricas clave en vivo:
-*   **Capital Invertido:** Valoración dinámica del stock multiplicada por su precio de venta.
-*   **Alertas Críticas:** Identificación inmediata de SKUs cuyo inventario físico ha caído por debajo de la alerta mínima configurada, facilitando las órdenes de reposición.
+## Tecnologías
 
-## ⚙️ Instalación Local
+PHP 8.2, Laravel 12, Blade, Tailwind CSS, SQLite, Laravel Excel (maatwebsite/excel).
 
-1. `git clone https://github.com/santiamm/stocksync-enterprise.git`
-2. `cd stocksync-enterprise`
-3. `composer install && npm install`
-4. `cp .env.example .env && php artisan key:generate`
-5. Configura `DB_CONNECTION=sqlite` en el archivo `.env`. (Borra o comenta los campos `DB_HOST`, `DB_PORT`, `DB_DATABASE`, etc).
-6. Crea el archivo de base de datos vacío: `touch database/database.sqlite` (en Windows puedes usar `type nul > database/database.sqlite`).
-7. `php artisan migrate`
-8. Inicia los servidores en dos terminales distintas: `php artisan serve` y `npm run dev`.
+## Cómo probarlo en local
 
----
+Requisitos: PHP 8.2+, Composer y Node.js.
 
-<a name="english-version"></a>
-# 🇺🇸 English Version
+```bash
+git clone https://github.com/santiamm/stocksync-enterprise.git
+cd stocksync-enterprise
+composer install
+npm install
+cp .env.example .env        # en Windows: copy .env.example .env
+php artisan key:generate
+php artisan migrate --seed  # crea la base SQLite y carga datos de ejemplo
+npm run build
+php artisan serve
+```
 
-**StockSync Enterprise** is an Enterprise Resource Planning (ERP) and inventory management system designed for logistics operations, warehouse control, and physical stock auditing.
+Abre http://127.0.0.1:8000 e inicia sesión con el usuario de prueba:
 
-Unlike generic templates, StockSync is built with real-world operational logic, streamlining workflows like physical counts, shrinkage detection, and bulk synchronization via Excel spreadsheets.
+- **Correo:** `demo@stocksync.test`
+- **Contraseña:** `password`
 
-## 🚀 Key Features
-*   **Excel Sync Engine:** Bidirectional import/export (`.xlsx`, `.xls`, `.csv`) with automatic validation and SKU duplication prevention (Upsert).
-*   **Physical Auditing:** Full traceability of inbound, outbound, and stock adjustments (shrinkage) with user and timestamp logging.
-*   **Real-Time Monitor:** Executive dashboard featuring live KPIs (invested capital, stockout alerts).
-*   **Premium Design:** Corporate responsive UI built with Tailwind CSS, optimized for desktop and mobile warehouse terminals.
-*   **Multilingual Support:** System prepared for native translations (i18n).
+Los datos de ejemplo traen 4 categorías, 15 productos y 6 movimientos. Para volver a empezar: `php artisan migrate:fresh --seed`.
 
-## 📖 Quick Start Guide
+### Pruebas automáticas
 
-Once installed, follow this operational flow to get your warehouse running:
+```bash
+php artisan test
+```
 
-### 1. Category Setup (Taxonomy)
-Before adding products, you must define your warehouse structure:
-*   Go to the **Categories** menu.
-*   Click on "New Category".
-*   Assign descriptive names (e.g., "Power Tools", "Consumables").
-*   *Security Note:* The system protects data integrity. You cannot delete a category if it has linked products.
-
-### 2. Base Inventory Loading (Excel Synchronization)
-Avoid tedious manual entry by using the Excel engine:
-*   Go to the **Inventory** menu.
-*   Click "Export Data" to get the official base template.
-*   Fill the Excel file with your SKUs, Names, Prices, Current Stock, and Minimum Stock Alerts.
-*   Click "Import Excel" and upload the file. The engine will create new products and automatically update the quantities of existing SKUs (Upsert).
-
-### 3. Daily Operations (Physical Audit)
-To log daily warehouse movements (supplier inbound, dispatches, or losses):
-*   Go to the **Physical Audit** menu.
-*   Record a new movement by selecting the product, type (Inbound, Outbound, Adjustment/Shrinkage), and quantity.
-*   This movement will automatically update the master inventory and will be logged with the timestamp and the responsible operator's name for traceability.
-
-### 4. Supervision (Dashboard)
-Managers or warehouse supervisors can use the **Dashboard** to view live key metrics:
-*   **Invested Capital:** Dynamic valuation of stock multiplied by its selling price.
-*   **Critical Alerts:** Immediate identification of SKUs where physical inventory has fallen below the configured minimum alert, streamlining replenishment orders.
-
-## ⚙️ Local Installation
-
-1. `git clone https://github.com/santiamm/stocksync-enterprise.git`
-2. `cd stocksync-enterprise`
-3. `composer install && npm install`
-4. `cp .env.example .env && php artisan key:generate`
-5. Set `DB_CONNECTION=sqlite` in the `.env` file. (Delete or comment out fields like `DB_HOST`, `DB_PORT`, `DB_DATABASE`, etc).
-6. Create the empty database file: `touch database/database.sqlite` (on Windows use `type nul > database/database.sqlite`).
-7. `php artisan migrate`
-8. Start the servers in two separate terminals: `php artisan serve` and `npm run dev`.
+Revisan, entre otras cosas, que las salidas no dejen stock negativo, que la importación respete las categorías y que no se borren productos con historial.

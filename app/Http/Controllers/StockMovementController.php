@@ -29,11 +29,19 @@ class StockMovementController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'type' => 'required|in:in,out,adjustment',
-            'quantity' => 'required|integer|min:1',
+            // En un ajuste la cantidad es el conteo real, que puede ser 0
+            'quantity' => 'required|integer|min:' . ($request->type === 'adjustment' ? 0 : 1),
             'reference_note' => 'nullable|string|max:255',
         ]);
 
         $product = Product::findOrFail($validated['product_id']);
+
+        // Regla de negocio: no se puede sacar más de lo que hay en bodega
+        if ($validated['type'] === 'out' && $validated['quantity'] > $product->stock) {
+            return back()->withInput()->withErrors([
+                'quantity' => 'Stock insuficiente: ' . $product->name . ' tiene ' . $product->stock . ' unidad(es) disponibles.',
+            ]);
+        }
 
         // Usamos una transacción de base de datos para asegurar que ambos pasos 
         // (crear movimiento y actualizar stock) se ejecuten correctamente o ninguno lo haga.
@@ -45,7 +53,7 @@ class StockMovementController extends Controller
                 'user_id' => Auth::id(), // Registra qué operario está haciendo esto
                 'type' => $validated['type'],
                 'quantity' => $validated['quantity'],
-                'reference_note' => $validated['reference_note'],
+                'reference_note' => $validated['reference_note'] ?? null,
             ]);
 
             // 2. Actualizar el inventario general del producto
