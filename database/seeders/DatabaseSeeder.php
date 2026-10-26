@@ -15,11 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // Usuario de prueba solo para uso local (contraseña: password)
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Operario Demo',
+            'email' => 'demo@stocksync.test',
+        ]);
+
+        $this->call([
+            CategorySeeder::class,
+            DemoSeeder::class,
         ]);
     }
 }

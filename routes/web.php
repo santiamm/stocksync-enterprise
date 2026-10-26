@@ -21,9 +21,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('products/import', [ProductController::class, 'import'])->name('products.import');
     Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
     
-    Route::resource('categories', CategoryController::class);
-    Route::resource('products', ProductController::class);
-    Route::resource('movements', StockMovementController::class);
+    // Solo se registran las acciones que existen en cada controlador
+    Route::resource('categories', CategoryController::class)->only(['index', 'create', 'store', 'destroy']);
+    Route::resource('products', ProductController::class)->except(['show']);
+    Route::resource('movements', StockMovementController::class)->only(['index', 'create', 'store']);
     
 
 });

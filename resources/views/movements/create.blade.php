@@ -8,6 +8,13 @@
     <div class="py-12">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-200 p-8">
+                @if($errors->any())
+                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm" role="alert">
+                        <p class="font-bold">Atención</p>
+                        <p>{{ $errors->first() }}</p>
+                    </div>
+                @endif
+
                 <form action="{{ route('movements.store') }}" method="POST">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -17,7 +24,7 @@
                             <select name="product_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 <option value="" disabled selected>Selecciona un producto...</option>
                                 @foreach($products as $product)
-                                    <option value="{{ $product->id }}">{{ $product->name }} (Stock: {{ $product->stock }})</option>
+                                    <option value="{{ $product->id }}" @selected(old('product_id') == $product->id)>{{ $product->name }} (Stock: {{ $product->stock }})</option>
                                 @endforeach
                             </select>
                         </div>
@@ -25,20 +32,20 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Tipo de Movimiento</label>
                             <select name="type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="in">Entrada (Llegada de mercancía)</option>
-                                <option value="out">Salida (Venta/Merma)</option>
-                                <option value="adjustment">Ajuste Físico (Conteo)</option>
+                                <option value="in" @selected(old('type') === 'in')>Entrada (Llegada de mercancía)</option>
+                                <option value="out" @selected(old('type') === 'out')>Salida (Venta/Merma)</option>
+                                <option value="adjustment" @selected(old('type') === 'adjustment')>Ajuste Físico (cantidad contada)</option>
                             </select>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Cantidad</label>
-                            <input type="number" name="quantity" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <input type="number" name="quantity" value="{{ old('quantity') }}" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         </div>
 
                         <div class="col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Nota de Referencia</label>
-                            <input type="text" name="reference_note" placeholder="Ej: Factura #123, Ajuste de inventario Q3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <input type="text" name="reference_note" value="{{ old('reference_note') }}" placeholder="Ej: Factura #123, Ajuste de inventario Q3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         </div>
 
                     </div>

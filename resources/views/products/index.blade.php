@@ -27,14 +27,27 @@
             </div>
         @endif
 
+        @if($errors->any())
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-r-lg" role="alert">
+                <p class="font-bold">Atención</p>
+                <p>{{ $errors->first() }}</p>
+            </div>
+        @endif
+
         <!-- BLOQUE DE BOTONES (AQUÍ DEBEN APARECER) -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
             <div class="flex flex-wrap items-center gap-3">
                 
-                <!-- 1. Formulario Oculto para Importar -->
-                <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data" id="importForm" class="hidden">
+                <!-- 1. Formulario para Importar: la categoría se asigna a los productos nuevos -->
+                <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data" id="importForm" class="flex items-center gap-2">
                     @csrf
-                    <input type="file" name="file" id="fileInput" accept=".xlsx, .xls, .csv" onchange="document.getElementById('importForm').submit()">
+                    <label for="importCategory" class="text-sm font-semibold text-gray-600">Categoría para nuevos:</label>
+                    <select name="category_id" id="importCategory" required class="rounded-lg border-gray-300 text-sm">
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                    <input type="file" name="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="document.getElementById('importForm').submit()">
                 </form>
 
                 <!-- 2. Botón Importar (Verde/Primario) -->
@@ -66,16 +79,19 @@
                         <tr>
                             <th class="py-4 px-6 text-sm font-semibold text-gray-600">SKU</th>
                             <th class="py-4 px-6 text-sm font-semibold text-gray-600">Nombre del Producto</th>
+                            <th class="py-4 px-6 text-sm font-semibold text-gray-600">Categoría</th>
                             <th class="py-4 px-6 text-sm font-semibold text-gray-600 text-right">Stock</th>
                             <th class="py-4 px-6 text-sm font-semibold text-gray-600 text-right">Precio</th>
                             <th class="py-4 px-6 text-sm font-semibold text-gray-600 text-center">Estado</th>
+                            <th class="py-4 px-6 text-sm font-semibold text-gray-600 text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse($products as $product)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="py-4 px-6 font-mono text-sm text-gray-500">{{ $product->sku }}</td>
+                                <td class="py-4 px-6 font-mono text-sm text-gray-500 whitespace-nowrap">{{ $product->sku }}</td>
                                 <td class="py-4 px-6 font-medium text-gray-900">{{ $product->name }}</td>
+                                <td class="py-4 px-6 text-sm text-gray-600">{{ $product->category->name ?? '—' }}</td>
                                 <td class="py-4 px-6 text-right font-bold {{ $product->stock <= $product->min_stock_alert ? 'text-red-600' : 'text-gray-900' }}">
                                     {{ $product->stock }}
                                 </td>
@@ -87,10 +103,18 @@
                                         <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">OK</span>
                                     @endif
                                 </td>
+                                <td class="py-4 px-6 text-right whitespace-nowrap">
+                                    <a href="{{ route('products.edit', $product) }}" class="text-sm font-semibold text-primary hover:underline">Editar</a>
+                                    <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('¿Eliminar el producto {{ $product->name }}?');" class="inline-block ml-3">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-sm font-semibold text-red-600 hover:underline">Eliminar</button>
+                                    </form>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-12 text-center text-gray-500">No hay productos. Usa el botón "Importar Excel" arriba.</td>
+                                <td colspan="7" class="py-12 text-center text-gray-500">No hay productos. Usa el botón "Importar Excel" arriba.</td>
                             </tr>
                         @endforelse
                     </tbody>
