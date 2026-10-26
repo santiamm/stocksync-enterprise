@@ -1,44 +1,33 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-bold text-2xl text-slate-900 leading-tight tracking-tight">
-                Añadir Categoría
-            </h2>
-            <a href="{{ route('categories.index') }}" class="text-sm font-medium text-slate-500 hover:text-slate-700 transition">
-                &larr; Volver
-            </a>
+    <x-slot:title>Nueva categoría</x-slot>
+
+    <a href="{{ route('categories.index') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-gris hover:text-petroleo">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        Categorías
+    </a>
+    <h1 class="page-title mt-3">Nueva categoría</h1>
+    <p class="page-lead">Por ejemplo: Ferretería, Electrónica o Insumos médicos.</p>
+
+    @if ($errors->any())
+        <div class="notice-error mt-6 max-w-2xl" role="alert"><span class="material-symbols-outlined">error</span>{{ $errors->first() }}</div>
+    @endif
+
+    <form action="{{ route('categories.store') }}" method="POST" class="mt-8 max-w-2xl space-y-6">
+        @csrf
+        <div class="panel p-5 sm:p-8 space-y-5">
+            <div>
+                <label for="name" class="field-label">Nombre</label>
+                <input id="name" type="text" name="name" value="{{ old('name') }}" required placeholder="Ej. Electrónica" class="field">
+            </div>
+            <div>
+                <label for="description" class="field-label">Descripción <span class="font-normal text-gris">(opcional)</span></label>
+                <textarea id="description" name="description" rows="3" placeholder="Qué tipo de productos van aquí" class="field h-auto">{{ old('description') }}</textarea>
+            </div>
         </div>
-    </x-slot>
 
-    <div class="py-10 bg-slate-50 min-h-screen">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <form action="{{ route('categories.store') }}" method="POST">
-                @csrf
-                <div class="shadow-sm ring-1 ring-slate-200 sm:rounded-2xl bg-white p-6 sm:p-8">
-                    <div class="grid grid-cols-1 gap-6">
-                        
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-900">Nombre de la Categoría</label>
-                            <input type="text" name="name" required placeholder="Ej. Electrónica" class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-900">Descripción (Opcional)</label>
-                            <textarea name="description" rows="3" placeholder="Breve descripción de los artículos en esta categoría..." class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors"></textarea>
-                        </div>
-
-                    </div>
-
-                    <div class="mt-8 flex justify-end gap-3">
-                        <button type="button" onclick="window.history.back()" class="text-sm font-bold text-slate-600 hover:text-slate-900 px-4 py-2 transition-colors">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all">
-                            Guardar Categoría
-                        </button>
-                    </div>
-                </div>
-            </form>
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+            <a href="{{ route('categories.index') }}" class="btn-secondary">Cancelar</a>
+            <button type="submit" class="btn-primary">Crear categoría</button>
         </div>
-    </div>
+    </form>
 </x-app-layout>

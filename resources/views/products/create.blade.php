@@ -1,128 +1,86 @@
 <x-app-layout>
-    <x-slot name="header">
-        <nav class="flex text-sm font-medium text-slate-500 mb-2">
-            <a href="{{ route('products.index') }}" class="hover:text-indigo-600 transition">Inventario</a>
-            <span class="mx-2">/</span>
-            <span class="text-slate-900">{{ isset($product) ? 'Editar Producto' : 'Nuevo Producto' }}</span>
-        </nav>
-        <h2 class="font-extrabold text-3xl text-slate-900 tracking-tight">
-            {{ isset($product) ? 'Editar Producto' : 'Añadir Producto' }}
-        </h2>
-    </x-slot>
+    @php $editing = isset($product); @endphp
+    <x-slot:title>{{ $editing ? 'Editar producto' : 'Nuevo producto' }}</x-slot>
 
-    <div class="py-10 bg-slate-50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if($errors->any())
-                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm" role="alert">
-                    <p class="font-bold">Atención</p>
-                    <p>{{ $errors->first() }}</p>
+    <a href="{{ route('products.index') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-gris hover:text-petroleo">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        Inventario
+    </a>
+    <h1 class="page-title mt-3">{{ $editing ? 'Editar producto' : 'Nuevo producto' }}</h1>
+    @if ($editing)
+        <p class="page-lead"><span class="rack align-middle">{{ $product->sku }}</span> {{ $product->name }}</p>
+    @else
+        <p class="page-lead">El SKU debe ser igual al código que tiene la etiqueta del producto.</p>
+    @endif
+
+    @if ($errors->any())
+        <div class="notice-error mt-6 max-w-3xl" role="alert"><span class="material-symbols-outlined">error</span>{{ $errors->first() }}</div>
+    @endif
+
+    <!-- El mismo formulario sirve para crear y para editar -->
+    <form action="{{ $editing ? route('products.update', $product) : route('products.store') }}" method="POST" class="mt-8 max-w-3xl space-y-6">
+        @csrf
+        @if ($editing)
+            @method('PUT')
+        @endif
+
+        <fieldset class="panel p-5 sm:p-8">
+            <legend class="sr-only">Datos del producto</legend>
+            <h2 class="section-title">Datos del producto</h2>
+            <div class="mt-5 grid sm:grid-cols-6 gap-5">
+                <div class="sm:col-span-4">
+                    <label for="name" class="field-label">Nombre</label>
+                    <input id="name" type="text" name="name" value="{{ old('name', $product->name ?? '') }}" required placeholder="Ej. Cinta métrica 5 m" class="field">
                 </div>
-            @endif
-
-            <!-- El mismo formulario sirve para crear y para editar -->
-            <form action="{{ isset($product) ? route('products.update', $product) : route('products.store') }}" method="POST">
-                @csrf
-                @isset($product)
-                    @method('PUT')
-                @endisset
-
-                <!-- SECCIÓN 1: DETALLES PRINCIPALES -->
-                <div class="md:grid md:grid-cols-3 md:gap-6 mb-10">
-                    <div class="md:col-span-1">
-                        <h3 class="text-lg font-bold leading-6 text-slate-900">Detalles del Producto</h3>
-                        <p class="mt-2 text-sm text-slate-500">
-                            Información pública y de clasificación. Asegúrate de que el SKU coincida con el código de barras físico.
-                        </p>
-                    </div>
-                    <div class="mt-5 md:col-span-2 md:mt-0">
-                        <div class="shadow-sm ring-1 ring-slate-200 sm:rounded-2xl bg-white p-6 sm:p-8">
-                            <div class="grid grid-cols-6 gap-6">
-                                
-                                <div class="col-span-6 sm:col-span-4">
-                                    <label class="block text-sm font-semibold text-slate-900">Nombre del Producto</label>
-                                    <input type="text" name="name" value="{{ old('name', $product->name ?? '') }}" required placeholder="Ej. Teclado Mecánico RGB" class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors">
-                                </div>
-
-                                <div class="col-span-6 sm:col-span-2">
-                                    <label class="block text-sm font-semibold text-slate-900">SKU</label>
-                                    <div class="relative mt-2">
-                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                            <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-                                            </svg>
-                                        </div>
-                                        <input type="text" name="sku" value="{{ old('sku', $product->sku ?? '') }}" required placeholder="PRD-001" class="block w-full pl-10 rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-mono text-slate-700">
-                                    </div>
-                                </div>
-
-                                <div class="col-span-6 sm:col-span-3">
-                                    <label class="block text-sm font-semibold text-slate-900">Categoría</label>
-                                    <select name="category_id" required class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-slate-50">
-                                        <option value="" disabled @selected(! old('category_id', $product->category_id ?? null))>Selecciona una categoría...</option>
-                                        @foreach($categories as $category)
-                                            <option value="{{ $category->id }}" @selected(old('category_id', $product->category_id ?? null) == $category->id)>{{ $category->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div class="col-span-6 sm:col-span-3">
-                                    <label class="block text-sm font-semibold text-slate-900">Precio de Venta</label>
-                                    <div class="relative mt-2">
-                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                            <span class="text-slate-500 sm:text-sm">$</span>
-                                        </div>
-                                        <input type="number" step="0.01" name="price" value="{{ old('price', $product->price ?? '') }}" required placeholder="0.00" class="block w-full pl-8 rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                    </div>
-                                </div>
-                                
-                            </div>
-                        </div>
+                <div class="sm:col-span-2">
+                    <label for="sku" class="field-label">SKU</label>
+                    <input id="sku" type="text" name="sku" value="{{ old('sku', $product->sku ?? '') }}" required placeholder="FER-003" class="field font-display text-lg tracking-wide uppercase">
+                </div>
+                <div class="sm:col-span-3">
+                    <label for="category_id" class="field-label">Categoría</label>
+                    <select id="category_id" name="category_id" required class="field">
+                        <option value="" disabled @selected(! old('category_id', $product->category_id ?? null))>Elige una categoría</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}" @selected(old('category_id', $product->category_id ?? null) == $category->id)>{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="sm:col-span-3">
+                    <label for="price" class="field-label">Precio de venta</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 mt-[3px] -translate-y-1/2 text-gris">$</span>
+                        <input id="price" type="number" step="0.01" min="0" name="price" value="{{ old('price', $product->price ?? '') }}" required placeholder="0" class="field pl-7">
                     </div>
                 </div>
+            </div>
+        </fieldset>
 
-                <!-- SECCIÓN 2: INVENTARIO -->
-                <div class="md:grid md:grid-cols-3 md:gap-6 mb-10 border-t border-slate-200 pt-10">
-                    <div class="md:col-span-1">
-                        <h3 class="text-lg font-bold leading-6 text-slate-900">Control de Stock</h3>
-                        <p class="mt-2 text-sm text-slate-500">
-                            Configura el inventario inicial y los umbrales de alerta para evitar desabastecimiento.
-                        </p>
-                    </div>
-                    <div class="mt-5 md:col-span-2 md:mt-0">
-                        <div class="shadow-sm ring-1 ring-slate-200 sm:rounded-2xl bg-white p-6 sm:p-8 grid grid-cols-2 gap-6">
-                            
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-900">{{ isset($product) ? 'Stock Actual' : 'Stock Inicial' }}</label>
-                                @isset($product)
-                                    <!-- El stock se cambia con movimientos para que quede en el historial -->
-                                    <input type="number" value="{{ $product->stock }}" disabled class="mt-2 block w-full rounded-xl border-slate-200 bg-slate-100 text-slate-500 shadow-sm sm:text-sm">
-                                    <p class="mt-2 text-xs text-slate-500">Para cambiarlo registra una entrada, salida o ajuste.</p>
-                                @else
-                                    <input type="number" name="stock" value="{{ old('stock', 0) }}" min="0" required class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @endisset
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-900 text-red-600">Alerta de Stock Crítico</label>
-                                <input type="number" name="min_stock_alert" value="{{ old('min_stock_alert', $product->min_stock_alert ?? 10) }}" required class="mt-2 block w-full rounded-xl border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
-                                <p class="mt-2 text-xs text-slate-500">Notificar al administrador cuando el stock llegue a esta cantidad.</p>
-                            </div>
-
-                        </div>
-                    </div>
+        <fieldset class="panel p-5 sm:p-8">
+            <legend class="sr-only">Stock</legend>
+            <h2 class="section-title">Stock</h2>
+            <div class="mt-5 grid sm:grid-cols-2 gap-5">
+                <div>
+                    @if ($editing)
+                        <label for="stock" class="field-label">Stock actual</label>
+                        <input id="stock" type="number" value="{{ $product->stock }}" disabled class="field bg-concreto text-gris">
+                        <p class="field-hint">Para cambiarlo, <a href="{{ route('movements.create') }}" class="link-action">registra un movimiento</a>.</p>
+                    @else
+                        <label for="stock" class="field-label">Stock inicial</label>
+                        <input id="stock" type="number" name="stock" value="{{ old('stock', 0) }}" min="0" required class="field">
+                        <p class="field-hint">Unidades que hay hoy en la bodega.</p>
+                    @endif
                 </div>
-
-                <!-- BOTONES DE ACCIÓN -->
-                <div class="flex justify-end gap-3 bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:rounded-2xl items-center sticky bottom-6 z-10">
-                    <button type="button" onclick="window.history.back()" class="text-sm font-bold text-slate-600 hover:text-slate-900 px-4 py-2 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        Guardar Producto
-                    </button>
+                <div>
+                    <label for="min_stock_alert" class="field-label">Stock mínimo</label>
+                    <input id="min_stock_alert" type="number" name="min_stock_alert" value="{{ old('min_stock_alert', $product->min_stock_alert ?? 10) }}" min="0" required class="field">
+                    <p class="field-hint">Al llegar a este número, el producto aparece en “Por reponer”.</p>
                 </div>
-            </form>
+            </div>
+        </fieldset>
+
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+            <a href="{{ route('products.index') }}" class="btn-secondary">Cancelar</a>
+            <button type="submit" class="btn-primary">{{ $editing ? 'Guardar cambios' : 'Crear producto' }}</button>
         </div>
-    </div>
+    </form>
 </x-app-layout>

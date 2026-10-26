@@ -8,13 +8,6 @@ use App\Http\Controllers\StockMovementController;
 use App\Models\Product;
 use App\Models\StockMovement;
 
-Route::get('lang/{locale}', function ($locale) {
-    if (in_array($locale, ['en', 'es'])) {
-        session()->put('locale', $locale);
-    }
-    return redirect()->back();
-})->name('lang.switch');
-
 Route::middleware(['auth'])->group(function () {
 
     // Rutas para importación/exportación masiva

@@ -1,4 +1,4 @@
-![StockSync](cover.png)
+![StockSync – resumen de bodega](docs/capturas/dashboard.png)
 
 # StockSync – Control de inventario para bodega
 
@@ -10,11 +10,13 @@ El código se escribió con ayuda de herramientas de IA. Yo definí las reglas d
 
 ## Capturas
 
-| Panel principal | Inventario |
+| Inventario | Registrar movimiento |
 |---|---|
-| ![Panel](docs/capturas/dashboard.png) | ![Inventario](docs/capturas/inventario.png) |
-| **Historial de movimientos** | **Registrar movimiento** |
-| ![Movimientos](docs/capturas/movimientos.png) | ![Nuevo movimiento](docs/capturas/nuevo-movimiento.png) |
+| ![Inventario](docs/capturas/inventario.png) | ![Nuevo movimiento](docs/capturas/nuevo-movimiento.png) |
+| **Historial de movimientos** | **Inicio de sesión** |
+| ![Movimientos](docs/capturas/movimientos.png) | ![Login](docs/capturas/login.png) |
+
+El diseño se adapta al celular: el menú lateral pasa a un botón arriba a la derecha.
 
 ## Qué hace
 
@@ -25,7 +27,8 @@ El código se escribió con ayuda de herramientas de IA. Yo definí las reglas d
   - *Ajuste:* después de un conteo físico se escribe la cantidad contada y el stock queda en ese número.
   - Cada movimiento guarda el usuario y la fecha.
 - **Alertas de stock bajo:** el panel muestra los productos que están en su stock mínimo o por debajo.
-- **Panel principal:** total de productos, unidades, valor del inventario (stock × precio) y últimos movimientos.
+- **Panel principal:** valor del inventario (stock × precio), productos, unidades, lista de productos por reponer con una barra de stock contra el mínimo y últimos movimientos.
+- **Búsqueda:** filtra la tabla de inventario por nombre, SKU o categoría.
 - **Excel:**
   - *Exportar* descarga el inventario en `.xlsx`.
   - *Importar* (`.xlsx`, `.xls`, `.csv`) crea los SKU nuevos en la categoría elegida y actualiza los que ya existen sin cambiarles la categoría.
@@ -39,14 +42,21 @@ El código se escribió con ayuda de herramientas de IA. Yo definí las reglas d
 ## Lo que todavía no tiene (pendientes)
 
 - El ajuste guarda la cantidad contada, no la diferencia, así que no hay un reporte de mermas.
-- La barra de búsqueda de arriba es solo visual.
-- Solo el panel principal está traducido al inglés; el resto está en español.
+- Está solo en español.
+- Si un usuario que ya registró movimientos intenta eliminar su cuenta, sale un error.
 - No hay roles (todos los usuarios pueden hacer todo) ni lector de código de barras.
 - No está publicado en internet; se prueba en local.
 
 ## Tecnologías
 
-PHP 8.2, Laravel 12, Blade, Tailwind CSS, SQLite, Laravel Excel (maatwebsite/excel).
+PHP 8.2, Laravel 12, Blade, Tailwind CSS, Alpine.js, SQLite, Laravel Excel (maatwebsite/excel).
+
+### Diseño
+
+- **Colores:** azul petróleo para la estructura y ámbar de señalización de bodega como acento. El verde se usa solo para entradas y el rojo para salidas.
+- **Tipografía:** Barlow y Barlow Condensed (Google Fonts).
+- **Etiquetas de SKU:** cada código aparece como la etiqueta amarilla de un estante.
+- **Logo:** tres cajas sobre una estiba.
 
 ## Cómo probarlo en local
 

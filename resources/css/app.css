@@ -1,3 +1,115 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-concreto text-petroleo font-sans antialiased;
+        font-variant-numeric: tabular-nums;
+    }
+
+    :focus-visible {
+        @apply outline-none ring-2 ring-senal ring-offset-2;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer components {
+    /* Encabezado de cada página: título grande en letra condensada, como la señalización de bodega */
+    .page-title {
+        @apply font-display font-bold text-4xl sm:text-5xl leading-none tracking-tight text-petroleo;
+    }
+
+    .page-lead {
+        @apply mt-2 text-base text-gris max-w-2xl;
+    }
+
+    .section-title {
+        @apply font-display font-semibold text-2xl leading-tight text-petroleo;
+    }
+
+    .panel {
+        @apply bg-white border border-linea rounded-md;
+    }
+
+    /* Botones */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 h-11 px-5 rounded-md font-semibold text-sm whitespace-nowrap transition-colors disabled:opacity-50;
+    }
+
+    .btn-primary {
+        @apply btn bg-petroleo text-white hover:bg-petroleo-600;
+    }
+
+    .btn-secondary {
+        @apply btn bg-white text-petroleo border border-linea hover:border-petroleo-300 hover:bg-petroleo-50;
+    }
+
+    .btn-danger {
+        @apply btn bg-salida text-white hover:bg-red-800;
+    }
+
+    .link-action {
+        @apply text-sm font-semibold text-petroleo underline decoration-petroleo-300 underline-offset-4 hover:decoration-petroleo;
+    }
+
+    /* Formularios */
+    .field-label {
+        @apply block text-sm font-semibold text-petroleo;
+    }
+
+    .field {
+        @apply mt-1.5 block w-full h-11 rounded-md border-linea bg-white text-petroleo shadow-none placeholder:text-petroleo-300 focus:border-petroleo focus:ring-petroleo;
+    }
+
+    .field-hint {
+        @apply mt-1.5 text-sm text-gris;
+    }
+
+    .field-error {
+        @apply mt-1.5 text-sm font-medium text-salida;
+    }
+
+    /* Etiqueta de estante para el SKU: el código se lee igual que en la bodega */
+    .rack {
+        @apply inline-flex items-center h-6 pl-1.5 pr-2 border-l-4 border-petroleo bg-senal font-display font-semibold text-sm tracking-wide text-petroleo whitespace-nowrap;
+    }
+
+    /* Tipos de movimiento */
+    .tag {
+        @apply inline-flex items-center gap-1 h-6 px-2 rounded text-xs font-semibold whitespace-nowrap;
+    }
+
+    .tag-in {
+        @apply tag bg-entrada-50 text-entrada;
+    }
+
+    .tag-out {
+        @apply tag bg-salida-50 text-salida;
+    }
+
+    .tag-adjust {
+        @apply tag bg-senal-50 text-senal-700;
+    }
+
+    /* Tablas */
+    .table-head {
+        @apply px-4 py-3 text-left text-sm font-semibold text-gris border-b border-linea bg-concreto/60;
+    }
+
+    .table-cell {
+        @apply px-4 py-3 align-middle border-b border-linea;
+    }
+
+    /* Mensajes */
+    .notice-ok {
+        @apply flex gap-3 items-start p-4 rounded-md border-l-4 border-entrada bg-entrada-50 text-entrada font-medium;
+    }
+
+    .notice-error {
+        @apply flex gap-3 items-start p-4 rounded-md border-l-4 border-salida bg-salida-50 text-salida font-medium;
+    }
+}

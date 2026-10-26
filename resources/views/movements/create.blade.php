@@ -1,65 +1,86 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Registrar Movimiento de Inventario') }}
-        </h2>
-    </x-slot>
+    <x-slot:title>Registrar movimiento</x-slot>
 
-    <div class="py-12">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-200 p-8">
-                @if($errors->any())
-                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm" role="alert">
-                        <p class="font-bold">Atención</p>
-                        <p>{{ $errors->first() }}</p>
-                    </div>
-                @endif
+    @php
+        $types = [
+            'in' => ['label' => 'Entrada', 'icon' => 'south', 'help' => 'Llegó mercancía. Suma al stock.', 'qty' => 'Unidades que entran', 'color' => 'peer-checked:border-entrada peer-checked:bg-entrada-50', 'icolor' => 'text-entrada'],
+            'out' => ['label' => 'Salida', 'icon' => 'north', 'help' => 'Se despachó o se perdió. Resta del stock.', 'qty' => 'Unidades que salen', 'color' => 'peer-checked:border-salida peer-checked:bg-salida-50', 'icolor' => 'text-salida'],
+            'adjustment' => ['label' => 'Conteo físico', 'icon' => 'fact_check', 'help' => 'Contaste el estante. El stock queda en lo contado.', 'qty' => 'Unidades contadas', 'color' => 'peer-checked:border-senal peer-checked:bg-senal-50', 'icolor' => 'text-senal-700'],
+        ];
+        $stockById = $products->pluck('stock', 'id');
+    @endphp
 
-                <form action="{{ route('movements.store') }}" method="POST">
-                    @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        
-                        <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Producto</label>
-                            <select name="product_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="" disabled selected>Selecciona un producto...</option>
-                                @foreach($products as $product)
-                                    <option value="{{ $product->id }}" @selected(old('product_id') == $product->id)>{{ $product->name }} (Stock: {{ $product->stock }})</option>
-                                @endforeach
-                            </select>
-                        </div>
+    <a href="{{ route('movements.index') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-gris hover:text-petroleo">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        Movimientos
+    </a>
+    <h1 class="page-title mt-3">Registrar movimiento</h1>
+    <p class="page-lead">Queda guardado con tu nombre y la hora.</p>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Tipo de Movimiento</label>
-                            <select name="type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="in" @selected(old('type') === 'in')>Entrada (Llegada de mercancía)</option>
-                                <option value="out" @selected(old('type') === 'out')>Salida (Venta/Merma)</option>
-                                <option value="adjustment" @selected(old('type') === 'adjustment')>Ajuste Físico (cantidad contada)</option>
-                            </select>
-                        </div>
+    @if ($errors->any())
+        <div class="notice-error mt-6 max-w-3xl" role="alert"><span class="material-symbols-outlined">error</span>{{ $errors->first() }}</div>
+    @endif
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Cantidad</label>
-                            <input type="number" name="quantity" value="{{ old('quantity') }}" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
+    <form action="{{ route('movements.store') }}" method="POST" class="mt-8 max-w-3xl space-y-6"
+          x-data="{ type: '{{ old('type', 'in') }}', product: '{{ old('product_id') }}', stock: @js($stockById) }">
+        @csrf
 
-                        <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Nota de Referencia</label>
-                            <input type="text" name="reference_note" value="{{ old('reference_note') }}" placeholder="Ej: Factura #123, Ajuste de inventario Q3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
+        <!-- Tipo de movimiento: tres opciones grandes, fáciles de tocar en celular -->
+        <fieldset>
+            <legend class="field-label">¿Qué pasó?</legend>
+            <div class="mt-2 grid sm:grid-cols-3 gap-3">
+                @foreach ($types as $value => $t)
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="type" value="{{ $value }}" x-model="type" aria-label="{{ $t['label'] }}" class="peer sr-only" @checked(old('type', 'in') === $value)>
+                        <span class="flex h-full flex-col gap-1 p-4 rounded-md border-2 border-linea bg-white transition-colors hover:border-petroleo-300 peer-focus-visible:ring-2 peer-focus-visible:ring-senal {{ $t['color'] }}">
+                            <span class="flex items-center gap-2 font-display font-bold text-xl">
+                                <span class="material-symbols-outlined {{ $t['icolor'] }}">{{ $t['icon'] }}</span>
+                                {{ $t['label'] }}
+                            </span>
+                            <span class="text-sm text-gris">{{ $t['help'] }}</span>
+                        </span>
+                    </label>
+                @endforeach
+            </div>
+        </fieldset>
 
-                    </div>
+        <div class="panel p-5 sm:p-8 grid sm:grid-cols-2 gap-5">
+            <div class="sm:col-span-2">
+                <label for="product_id" class="field-label">Producto</label>
+                <select id="product_id" name="product_id" x-model="product" required class="field">
+                    <option value="" disabled @selected(! old('product_id'))>Elige un producto</option>
+                    @foreach ($products as $p)
+                        <option value="{{ $p->id }}" @selected(old('product_id') == $p->id)>{{ $p->sku }} · {{ $p->name }}</option>
+                    @endforeach
+                </select>
+                <p class="field-hint" x-show="product" x-cloak>
+                    Hay <strong class="text-petroleo" x-text="stock[product]"></strong> unidades en bodega.
+                </p>
+            </div>
 
-                    <div class="mt-8 flex justify-end gap-3">
-                         <button type="button" onclick="window.history.back()" class="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-700 px-4 py-2">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow">
-                            Registrar Movimiento
-                        </button>
-                    </div>
-                </form>
+            <div>
+                <label for="quantity" class="field-label">
+                    @foreach ($types as $value => $t)
+                        <span x-show="type === '{{ $value }}'" @if ($value !== old('type', 'in')) x-cloak @endif>{{ $t['qty'] }}</span>
+                    @endforeach
+                </label>
+                <input id="quantity" type="number" name="quantity" value="{{ old('quantity') }}" required
+                       :min="type === 'adjustment' ? 0 : 1" :max="type === 'out' && product ? stock[product] : null" min="0" inputmode="numeric"
+                       class="field font-display text-2xl">
+                <p class="field-hint" x-show="type === 'out' && product" x-cloak>
+                    Máximo <span x-text="stock[product]"></span>.
+                </p>
+            </div>
+
+            <div>
+                <label for="reference_note" class="field-label">Nota <span class="font-normal text-gris">(opcional)</span></label>
+                <input id="reference_note" type="text" name="reference_note" value="{{ old('reference_note') }}" placeholder="Ej. Factura 1042, despacho sede norte" class="field">
             </div>
         </div>
-    </div>
+
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+            <a href="{{ route('movements.index') }}" class="btn-secondary">Cancelar</a>
+            <button type="submit" class="btn-primary">Registrar movimiento</button>
+        </div>
+    </form>
 </x-app-layout>
