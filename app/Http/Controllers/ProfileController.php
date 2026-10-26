@@ -48,6 +48,15 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // Regla de negocio: si la cuenta ya registró movimientos, borrarla dejaría el historial sin responsable.
+        $movementsCount = $user->movements()->count();
+
+        if ($movementsCount > 0) {
+            return Redirect::route('profile.edit')->withErrors([
+                'password' => 'No puedes eliminar tu cuenta porque registraste ' . $movementsCount . ' movimiento(s). Se conserva para que el historial muestre quién los hizo.',
+            ], 'userDeletion');
+        }
+
         Auth::logout();
 
         $user->delete();

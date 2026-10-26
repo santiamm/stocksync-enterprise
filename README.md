@@ -38,12 +38,13 @@ El diseño se adapta al celular: el menú lateral pasa a un botón arriba a la d
 - No se puede borrar una categoría que tiene productos.
 - No se puede borrar un producto que ya tiene movimientos (se perdería su historial).
 - El stock de un producto no se edita a mano: se cambia con un movimiento, para que quede registrado.
+- No se puede eliminar la cuenta de un usuario que ya registró movimientos (el historial perdería al responsable).
+- Al importar Excel, si una fila tiene un dato inválido no se guarda nada y se indica qué SKU revisar.
 
 ## Lo que todavía no tiene (pendientes)
 
 - El ajuste guarda la cantidad contada, no la diferencia, así que no hay un reporte de mermas.
 - Está solo en español.
-- Si un usuario que ya registró movimientos intenta eliminar su cuenta, sale un error.
 - No hay roles (todos los usuarios pueden hacer todo) ni lector de código de barras.
 - No está publicado en internet; se prueba en local.
 
@@ -69,7 +70,7 @@ composer install
 npm install
 cp .env.example .env        # en Windows: copy .env.example .env
 php artisan key:generate
-php artisan migrate --seed  # crea la base SQLite y carga datos de ejemplo
+php artisan migrate --seed  # crea la base SQLite y carga datos de ejemplo (si pregunta por crear la base, responde yes)
 npm run build
 php artisan serve
 ```
@@ -78,6 +79,8 @@ Abre http://127.0.0.1:8000 e inicia sesión con el usuario de prueba:
 
 - **Correo:** `demo@stocksync.test`
 - **Contraseña:** `password`
+
+Los correos (por ejemplo, recuperar contraseña) no se envían: quedan escritos en `storage/logs/laravel.log`. Para enviarlos con Gmail hay instrucciones en `.env.example`.
 
 Los datos de ejemplo traen 4 categorías, 15 productos y 6 movimientos. Para volver a empezar: `php artisan migrate:fresh --seed`.
 
