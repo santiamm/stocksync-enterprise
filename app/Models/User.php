@@ -35,6 +35,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * Movimientos de stock que registró este usuario.
+     */
+    public function movements()
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

@@ -47,9 +47,23 @@ class ProductsImport implements ToModel, WithHeadingRow, WithUpserts, WithUpsert
             return null;
         }
 
+        // Cada fila debe traer nombre y números válidos; si no, se avisa qué SKU revisar
+        $sku = (string) $row['sku'];
+        if (blank($row['nombre'])) {
+            throw new \InvalidArgumentException("El SKU {$sku} no tiene nombre.");
+        }
+        if (! is_numeric($row['precio']) || $row['precio'] < 0) {
+            throw new \InvalidArgumentException("El precio del SKU {$sku} debe ser un número mayor o igual a 0.");
+        }
+        foreach (['stock_actual' => 'stock actual', 'alerta_stock_minimo' => 'stock mínimo'] as $key => $label) {
+            if (! is_numeric($row[$key]) || $row[$key] < 0 || floor($row[$key]) != $row[$key]) {
+                throw new \InvalidArgumentException("El {$label} del SKU {$sku} debe ser un número entero mayor o igual a 0.");
+            }
+        }
+
         return new Product([
             'category_id'     => $this->categoryId,
-            'sku'             => (string) $row['sku'],
+            'sku'             => $sku,
             'name'            => $row['nombre'],
             'price'           => $row['precio'],
             'stock'           => $row['stock_actual'],

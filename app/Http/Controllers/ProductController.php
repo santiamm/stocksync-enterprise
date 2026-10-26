@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Exports\ProductsExport;
 use App\Imports\ProductsImport;
@@ -94,8 +95,14 @@ class ProductController extends Controller
             'category_id.required' => 'Selecciona la categoría para los productos nuevos antes de importar.',
         ]);
 
+        // Todo o nada: si una fila tiene un error no se guarda ninguna
         try {
-            Excel::import(new ProductsImport((int) $request->category_id), $request->file('file'));
+            DB::transaction(function () use ($request) {
+                Excel::import(new ProductsImport((int) $request->category_id), $request->file('file'));
+            });
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->route('products.index')
+                ->withErrors(['No se importó nada. ' . $e->getMessage()]);
         } catch (\Exception $e) {
             report($e);
             return redirect()->route('products.index')
